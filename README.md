@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chrome3d
 
-## Getting Started
+Course site for Chrome3d, an additive manufacturing company. Visitors browse and buy courses, watch the lessons on the site, and see the company's Instagram reels. Admins upload lesson videos and choose which are free and which sit behind the paywall.
 
-First, run the development server:
+Built with Next.js (App Router), Tailwind CSS, Supabase (accounts, database, private video storage) and Stripe Checkout.
+
+## Run it
+
+```bash
+npm install
+```
+
+```bash
+cp .env.example .env.local
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+With no environment variables the site runs in **demo mode** on the sample catalogue in `src/content/courses.ts`: every page renders, but accounts, purchases, uploads and video playback are off.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Connect the services
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Service | Variables | What it switches on |
+|---|---|---|
+| Supabase | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Accounts, courses from the database, admin area, video upload and playback |
+| Supabase service role | `SUPABASE_SERVICE_ROLE_KEY` | Lets the Stripe webhook record a purchase |
+| Stripe | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Paid checkout. Point a webhook for `checkout.session.completed` at `/api/webhooks/stripe` |
+| Instagram | `INSTAGRAM_ACCESS_TOKEN`, `NEXT_PUBLIC_INSTAGRAM_HANDLE` | Real reels instead of sample cards |
 
-## Learn More
+Database setup: apply `supabase/migrations/0001_init.sql`, then `supabase/seed.sql` for the sample courses.
 
-To learn more about Next.js, take a look at the following resources:
+### Making someone an admin
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Add their email to the `admin_emails` table **before** they sign up; the account is created as an admin. For an existing account, set `role = 'admin'` on their row in `profiles`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## How access to videos works
 
-## Deploy on Vercel
+Videos live in the private `course-videos` bucket at `<course id>/<lesson id>/<file>`. Nothing in that bucket is public. Database policies allow a visitor to read a video only when the lesson is free, they are enrolled in the course, or they are an admin; `/api/lessons/[id]/playback` then hands the player a short-lived signed URL. All hosting calls sit in `src/lib/video/`, so the host can be swapped for a streaming service later.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Supabase's free plan limits each file to 50 MB; larger videos need the Pro plan.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Animations
+
+- **Hero car** (`src/components/hero/`): one car drawn three ways. The blueprint draws itself on load; scrolling prints the chassis layer by layer, then wipes in the finished body.
+- **Footer builder** (`src/components/footer/TetrisForge.tsx`): tetris pieces assemble ten objects, each turning into an isometric 3D outline. The silhouettes are in `src/lib/tetris/silhouettes.ts`; `npm run shapes` re-tiles them into tetris pieces and `npm test` checks every tiling is exact.
+
+Both respect the reduced-motion system setting.
+
+## Design references
+
+`.mcp.json` registers the [Awwwards MCP](https://github.com/INSANE0777/Awwwards-mcp) so design research tools are available when working on this repo with an MCP-capable agent.
