@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { TetrisForge } from "@/components/footer/TetrisForge";
-import { container } from "@/components/ui/styles";
+import { container, textLink } from "@/components/ui/styles";
 import { INSTAGRAM_HANDLE } from "@/lib/env";
 import { Logo } from "./Logo";
 
-const link = "text-sm text-steel transition-colors hover:text-chrome";
+const link = textLink;
 
 export function Footer() {
   return (

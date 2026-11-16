@@ -35,8 +35,9 @@ export default async function CoursesPage({ searchParams }: PageProps<"/courses"
             </Link>
           ))}
         </nav>
+        <h2 className="sr-only">{active === "All" ? "All courses" : `${active} courses`}</h2>
         {shown.length === 0 ? (
-          <p className="mt-10 text-steel">No courses at this level yet.</p>
+          <p className="mt-10 text-sm text-steel">No courses at this level yet.</p>
         ) : (
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map((course) => (

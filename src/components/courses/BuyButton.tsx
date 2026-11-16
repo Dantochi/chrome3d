@@ -13,7 +13,7 @@ export function BuyButton({ courseId, label }: { courseId: string; label: string
         {pending ? "One moment…" : label}
       </button>
       {state.error && (
-        <p role="alert" className="text-sm text-steel">
+        <p role="alert" className="text-sm text-danger">
           {state.error}
         </p>
       )}

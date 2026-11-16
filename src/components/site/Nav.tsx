@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { signOut } from "@/app/login/actions";
-import { btnSmall, container } from "@/components/ui/styles";
+import { btnSmall, container, textLink } from "@/components/ui/styles";
 import { getProfile } from "@/lib/auth";
 import { Logo } from "./Logo";
 
-const link = "text-sm text-steel transition-colors hover:text-chrome";
+const link = textLink;
 
 export async function Nav() {
   const profile = await getProfile();

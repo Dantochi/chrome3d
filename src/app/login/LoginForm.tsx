@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { btnPrimary, field, fieldLabel } from "@/components/ui/styles";
+import { btnPrimary, field, fieldLabel, textLink } from "@/components/ui/styles";
 import { signIn, signUp, type AuthState } from "./actions";
 
 export function LoginForm({ next }: { next: string }) {
@@ -58,7 +58,7 @@ export function LoginForm({ next }: { next: string }) {
       <button
         type="button"
         onClick={() => setMode(mode === "in" ? "up" : "in")}
-        className="text-sm text-steel transition-colors hover:text-chrome"
+        className={textLink}
       >
         {mode === "in" ? "New here? Create an account" : "Already have an account? Sign in"}
       </button>

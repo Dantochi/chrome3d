@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { createCourse, updateCourse, type FormState } from "@/app/admin/actions";
-import { btnPrimary, field, fieldLabel, textarea } from "@/components/ui/styles";
+import { btnPrimary, check, field, fieldLabel, textarea } from "@/components/ui/styles";
 import type { Course } from "@/lib/types";
 
 export function Feedback({ state, saved = "Saved" }: { state: FormState; saved?: string }) {
@@ -91,8 +91,8 @@ export function CourseForm({ course }: { course: Course }) {
         <textarea id="description" name="description" defaultValue={course.description} className={textarea} />
       </div>
       <label className="flex items-center gap-3 text-sm sm:col-span-2">
-        <input type="checkbox" name="published" defaultChecked={course.published} className="h-4 w-4 accent-[var(--blueprint)]" />
-        Published · visible on the site
+        <input type="checkbox" name="published" defaultChecked={course.published} className={check} />
+        Live · visible on the site
       </label>
       <div className="flex items-center gap-4 sm:col-span-2">
         <button className={btnPrimary} disabled={pending}>

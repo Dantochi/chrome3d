@@ -4,9 +4,12 @@ const btn =
 
 export const btnPrimary = `${btn} bg-chrome text-ink hover:bg-white`;
 export const btnGhost = `${btn} border border-line text-chrome hover:border-steel`;
-export const btnDanger = `${btn} border border-line text-danger hover:border-danger`;
 export const btnSmall =
   "inline-flex h-9 items-center justify-center gap-2 rounded-full border border-line px-4 text-xs font-medium text-chrome transition-colors hover:border-steel disabled:opacity-50";
+
+export const btnSmallDanger = `${btnSmall} !text-danger hover:!border-danger`;
+export const textLink = "text-sm text-steel transition-colors hover:text-chrome";
+export const check = "h-4 w-4 accent-[var(--blueprint)]";
 
 export const field =
   "h-11 w-full rounded-lg border border-line bg-panel px-3 text-sm text-chrome placeholder:text-steel/60 transition-colors focus:border-blueprint focus:outline-none";

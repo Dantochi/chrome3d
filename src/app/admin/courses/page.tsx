@@ -14,7 +14,8 @@ export default async function AdminCourses() {
       <div className={`${panel} p-6`}>
         <NewCourseForm />
       </div>
-      <ul className={`${panel} mt-8 divide-y divide-line overflow-hidden`}>
+      <h2 className="mt-12 font-display text-2xl font-medium tracking-tight">All courses</h2>
+      <ul className={`${panel} mt-5 divide-y divide-line overflow-hidden`}>
         {courses.length === 0 && <li className="p-5 text-sm text-steel">No courses yet. Create the first one above.</li>}
         {courses.map((course) => (
           <li key={course.id}>

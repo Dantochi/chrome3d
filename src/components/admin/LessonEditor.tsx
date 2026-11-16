@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { createLesson, deleteLesson, moveLesson, removeLessonVideo, updateLesson, type FormState } from "@/app/admin/actions";
-import { btnPrimary, btnSmall, field, fieldLabel, textarea } from "@/components/ui/styles";
+import { btnPrimary, btnSmall, btnSmallDanger, check, field, fieldLabel, textarea } from "@/components/ui/styles";
 import { formatDuration } from "@/lib/format";
 import type { Lesson } from "@/lib/types";
 import { Feedback } from "./CourseForm";
@@ -65,7 +65,7 @@ export function LessonEditor({ lesson, index, count }: { lesson: Lesson; index: 
                       name="access"
                       value={value}
                       defaultChecked={lesson.is_free === (value === "free")}
-                      className="mt-0.5 h-4 w-4 accent-[var(--blueprint)]"
+                      className={`${check} mt-0.5`}
                     />
                     <span>
                       {name}
@@ -111,7 +111,7 @@ export function LessonEditor({ lesson, index, count }: { lesson: Lesson; index: 
               className="mt-auto"
             >
               {ids}
-              <button className={`${btnSmall} !text-danger hover:!border-danger`}>Delete lesson</button>
+              <button className={btnSmallDanger}>Delete lesson</button>
             </form>
           </div>
         </div>
@@ -131,7 +131,7 @@ export function NewLessonForm({ courseId }: { courseId: string }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <input id="new-lesson-title" name="title" required key={String(state.saved)} placeholder="e.g. Calibrating flow rate" className={field} />
         <label className="flex shrink-0 items-center gap-2 text-sm">
-          <input type="checkbox" name="is_free" className="h-4 w-4 accent-[var(--blueprint)]" />
+          <input type="checkbox" name="is_free" className={check} />
           Free lesson
         </label>
         <button className={`${btnPrimary} shrink-0`} disabled={pending}>
@@ -152,7 +152,7 @@ export function DeleteCourseForm({ id, title, action }: { id: string; title: str
       }}
     >
       <input type="hidden" name="id" value={id} />
-      <button className={`${btnSmall} !text-danger hover:!border-danger`}>Delete course</button>
+      <button className={btnSmallDanger}>Delete course</button>
     </form>
   );
 }

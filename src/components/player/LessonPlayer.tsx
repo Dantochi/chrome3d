@@ -52,7 +52,7 @@ export function LessonPlayer({ lessonId, title, startAt, nextHref }: Props) {
   };
 
   return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-line bg-black">
+    <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-line bg-ink">
       {status === "ready" && src ? (
         <video
           ref={videoRef}
@@ -79,7 +79,7 @@ export function LessonPlayer({ lessonId, title, startAt, nextHref }: Props) {
         />
       ) : (
         <div className="bg-grid grid h-full w-full place-items-center p-6 text-center">
-          <p role="status" className="max-w-xs text-sm text-steel">
+          <p role={status === "error" ? "alert" : "status"} className={`max-w-xs text-sm ${status === "error" ? "text-danger" : "text-steel"}`}>
             {MESSAGES[status as Exclude<Status, "ready">]}
           </p>
         </div>

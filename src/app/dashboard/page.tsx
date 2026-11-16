@@ -45,7 +45,7 @@ export default async function Dashboard() {
                     <CourseCover slug={course.slug} className="aspect-[16/9]" />
                     <div className="flex flex-col gap-4 border-t border-line p-5">
                       <h2 className="font-display text-xl font-medium tracking-tight">{course.title}</h2>
-                      <div className="h-1 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+                      <div className="h-1 overflow-hidden rounded-full bg-line" role="progressbar" aria-label={`${course.title} progress`} aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
                         <div className="h-full bg-blueprint" style={{ width: `${pct}%` }} />
                       </div>
                       <p className="label">

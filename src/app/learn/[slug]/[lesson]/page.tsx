@@ -91,7 +91,8 @@ export default async function LessonPage({ params }: PageProps<"/learn/[slug]/[l
                     {progress[l.id]?.completed ? "✓" : ""}
                   </span>
                   <span className="min-w-0 flex-1 truncate">
-                    {i + 1}. {l.title}
+                    <span className="label mr-2 tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                    {l.title}
                   </span>
                   <span className="label shrink-0 tabular-nums">{watchable ? formatDuration(l.duration_seconds) : "Locked"}</span>
                 </Link>

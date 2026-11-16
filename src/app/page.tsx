@@ -44,7 +44,7 @@ export default async function Home() {
               <h2 className="mt-4 font-display text-3xl font-medium tracking-tight sm:text-5xl">Start printing with intent</h2>
             </div>
             <Link href="/courses" className={btnGhost}>
-              View all courses
+              Browse courses
             </Link>
           </div>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -57,7 +57,7 @@ export default async function Home() {
 
       <ReelsRail />
 
-      <section className="bg-grid py-24 sm:py-32">
+      <section className="bg-grid py-20 sm:py-28">
         <div className={`${container} flex flex-col items-start gap-8`}>
           <h2 className="max-w-3xl font-display text-4xl font-medium leading-[1.02] tracking-tight sm:text-6xl">
             <span className="text-chrome">Your first lesson is free.</span>

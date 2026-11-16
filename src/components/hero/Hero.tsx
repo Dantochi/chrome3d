@@ -14,7 +14,7 @@ function Copy() {
     <div className={`${container} relative z-10 pt-24 sm:pt-28`}>
       <p className="label fade-up">Additive manufacturing academy</p>
       <h1
-        className="fade-up mt-5 max-w-5xl font-display text-[clamp(2.5rem,min(8.2vw,12.5svh),7.25rem)] font-medium leading-[0.92] tracking-[-0.04em]"
+        className="fade-up mt-5 max-w-5xl font-display text-[clamp(2.5rem,min(8.2vw,12.5svh),7.25rem)] font-medium leading-[0.92] tracking-tighter"
         style={{ animationDelay: "0.08s" }}
       >
         <span className="text-chrome">Learn to build</span>
@@ -65,7 +65,7 @@ export function Hero() {
   return (
     <section ref={ref} className="relative h-[240svh] border-b border-line">
       <div className="bg-grid sticky top-0 flex h-svh flex-col overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_100%,rgb(92_200_255/0.07),transparent)]" />
+        <div className="hero-glow pointer-events-none absolute inset-0" />
         <Copy />
         {/* The car takes whatever height is left and never spills past it. */}
         <div className="relative mx-auto mt-4 flex min-h-0 w-[min(1100px,96vw)] flex-1 items-end justify-center [container-type:size]">
