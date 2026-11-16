@@ -43,7 +43,7 @@ export const ORIENTATIONS: { kind: PieceKind; cells: Cell[] }[] = (() => {
  * Tiles a silhouette exactly with tetrominoes. Returns null when no tiling exists.
  * Row 0 of `rows` is the top; returned cells use y = 0 at the top as well.
  */
-export function tile(name: string, rows: string[], seed = 1): TiledShape | null {
+export function tile(name: string, rows: string[], seed = 1, maxSteps = 2_000_000): TiledShape | null {
   const height = rows.length;
   const width = Math.max(...rows.map((r) => r.length));
   const open = rows.map((r) => Array.from({ length: width }, (_, x) => r[x] === "#"));
@@ -54,7 +54,7 @@ export function tile(name: string, rows: string[], seed = 1): TiledShape | null 
   let s = seed;
   const rand = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32);
   const pieces: Piece[] = [];
-  let budget = 2_000_000;
+  let budget = maxSteps;
 
   const solve = (): boolean => {
     if (--budget < 0) return false;

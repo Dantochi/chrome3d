@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
 import { btnGhost, btnPrimary, container } from "@/components/ui/styles";
-import { CarBuild, CarStatic } from "./CarBuild";
+import { EngineBuild, EngineStatic } from "./EngineBuild";
 
-const STAGES = ["Blueprint", "Chassis", "Finished"];
+const STAGES = ["Blueprint", "Core", "Finished"];
 const LAYERS = 310;
 
 function Copy() {
@@ -56,7 +56,7 @@ export function Hero() {
       <section className="bg-grid relative overflow-hidden border-b border-line pb-10">
         <Copy />
         <div className="mx-auto mt-10 w-[min(1100px,96vw)]">
-          <CarStatic />
+          <EngineStatic />
         </div>
       </section>
     );
@@ -67,10 +67,10 @@ export function Hero() {
       <div className="bg-grid sticky top-0 flex h-svh flex-col overflow-hidden">
         <div className="hero-glow pointer-events-none absolute inset-0" />
         <Copy />
-        {/* The car takes whatever height is left and never spills past it. */}
+        {/* The engine takes whatever height is left and never spills past it. */}
         <div className="relative mx-auto mt-4 flex min-h-0 w-[min(1100px,96vw)] flex-1 items-end justify-center [container-type:size]">
           <div className="opacity-90" style={{ width: "min(100cqw, calc(100cqh * 8 / 3))" }}>
-            <CarBuild progress={scrollYProgress} />
+            <EngineBuild progress={scrollYProgress} />
           </div>
         </div>
         <div className={`${container} relative z-10 flex items-center justify-between gap-6 pb-6 pt-2`}>

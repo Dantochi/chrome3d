@@ -1,40 +1,83 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { buildEdges, DEPTH, project, type Edge } from "@/lib/tetris/iso";
-import { SHAPES } from "@/lib/tetris/shapes";
-import type { Cell, Piece, TiledShape } from "@/lib/tetris/tiler";
+import { DEPTH, project } from "@/lib/tetris/iso";
+import { SHAPES, type ForgeShape } from "@/lib/tetris/shapes";
+import type { Cell, Piece } from "@/lib/tetris/tiler";
 
 /**
- * Footer animation. Tetris pieces drop in to build an object, the flat build turns to an
- * isometric view and extrudes, and what remains is a clean 3D outline. Ten objects, on a loop.
+ * Footer animation. Tetris pieces drop in to build a real object, the blocky build relaxes
+ * into the object's smooth outline, and that outline turns to an isometric view and gains
+ * depth. Ten objects, on a loop.
  */
 
-const STAGGER = 150;
+const STAGGER = 110;
 const FALL = 460;
 const SETTLE = 350;
-const FUSE = 550;
+const FUSE = 500;
+const SMOOTH = 1300;
+const PAUSE = 500;
 const TURN = 1500;
 const HOLD = 2400;
 const OUT = 650;
 
+type Contour = { to: Float32Array; from: Float32Array; back: string };
+
 type Prepared = {
-  shape: TiledShape;
+  shape: ForgeShape;
   pieces: Piece[];
-  cells: Cell[];
-  edges: Edge[];
+  /** Outer edges of the block silhouette, as [x1, y1, x2, y2]. */
+  blockEdges: number[][];
+  contours: Contour[];
   dropEnd: number;
   total: number;
 };
 
-function prepare(shape: TiledShape): Prepared {
+function prepare(shape: ForgeShape): Prepared {
   // Lowest pieces land first.
   const pieces = [...shape.pieces].sort(
     (a, b) => Math.max(...b.cells.map((c) => c[1])) - Math.max(...a.cells.map((c) => c[1])),
   );
-  const cells = pieces.flatMap((p) => p.cells);
+  const filled = new Set(pieces.flatMap((p) => p.cells.map(([x, y]) => `${x},${y}`)));
+  const has = (x: number, y: number) => filled.has(`${x},${y}`);
+  const blockEdges: number[][] = [];
+  for (const piece of pieces)
+    for (const [x, y] of piece.cells) {
+      if (!has(x, y - 1)) blockEdges.push([x, y, x + 1, y]);
+      if (!has(x, y + 1)) blockEdges.push([x, y + 1, x + 1, y + 1]);
+      if (!has(x - 1, y)) blockEdges.push([x, y, x, y + 1]);
+      if (!has(x + 1, y)) blockEdges.push([x + 1, y, x + 1, y + 1]);
+    }
+
+  // Every point of the smooth outline starts from the nearest point on the block outline.
+  const contours = shape.contours.map((flat, i) => {
+    const to = Float32Array.from(flat);
+    const from = new Float32Array(flat.length);
+    for (let k = 0; k < flat.length; k += 2) {
+      let best = Infinity;
+      for (const [x1, y1, x2, y2] of blockEdges) {
+        const px = Math.min(Math.max(flat[k], Math.min(x1, x2)), Math.max(x1, x2));
+        const py = Math.min(Math.max(flat[k + 1], Math.min(y1, y2)), Math.max(y1, y2));
+        const d = (px - flat[k]) ** 2 + (py - flat[k + 1]) ** 2;
+        if (d < best) {
+          best = d;
+          from[k] = px;
+          from[k + 1] = py;
+        }
+      }
+    }
+    return { to, from, back: shape.back[i] };
+  });
+
   const dropEnd = (pieces.length - 1) * STAGGER + FALL;
-  return { shape, pieces, cells, edges: buildEdges(cells), dropEnd, total: dropEnd + SETTLE + FUSE + TURN + HOLD + OUT };
+  return {
+    shape,
+    pieces,
+    blockEdges,
+    contours,
+    dropEnd,
+    total: dropEnd + SETTLE + FUSE + SMOOTH + PAUSE + TURN + HOLD + OUT,
+  };
 }
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -75,7 +118,8 @@ function draw(ctx: CanvasRenderingContext2D, w: number, h: number, p: Prepared, 
 
   const tDrop = p.dropEnd + SETTLE;
   const fuse = staticView ? 1 : clamp01((time - tDrop) / FUSE);
-  const turn = staticView ? 1 : ease(clamp01((time - tDrop - FUSE) / TURN));
+  const smooth = staticView ? 1 : ease(clamp01((time - tDrop - FUSE) / SMOOTH));
+  const turn = staticView ? 1 : ease(clamp01((time - tDrop - FUSE - SMOOTH - PAUSE) / TURN));
   const out = staticView ? 0 : clamp01((time - (p.total - OUT)) / OUT);
   const alpha = 1 - out;
 
@@ -94,12 +138,12 @@ function draw(ctx: CanvasRenderingContext2D, w: number, h: number, p: Prepared, 
     }
   }
   const ox = w / 2 - ((minX + maxX) / 2) * s;
-  const oy = h / 2 - ((minY + maxY) / 2) * s + (out ? out * 10 : 0);
+  const oy = h / 2 - ((minY + maxY) / 2) * s + out * 10;
 
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
 
-  // 1. Pieces dropping in and locking (flat view).
+  // 1. Pieces dropping in and locking.
   if (fuse < 1) {
     ctx.globalAlpha = (1 - fuse) * alpha;
     p.pieces.forEach((piece, i) => {
@@ -129,29 +173,77 @@ function draw(ctx: CanvasRenderingContext2D, w: number, h: number, p: Prepared, 
     });
   }
 
-  // 2. The fused object: outline only, turning to isometric and extruding.
-  if (fuse > 0) {
-    ctx.globalAlpha = fuse * alpha;
-    ctx.strokeStyle = colors.outline;
-    const pt = (x: number, y: number, z: number): [number, number] => {
-      const [px, py] = project(x, y, z, turn);
-      return [ox + px * s, oy + py * s];
-    };
-    // Depth lines first and lighter, then the silhouette on top.
-    for (const front of [false, true]) {
-      ctx.lineWidth = front ? 1.6 : 1.1;
-      ctx.globalAlpha = fuse * alpha * (front ? 1 : 0.55 * turn);
-      ctx.beginPath();
-      for (const edge of p.edges) {
-        if (edge.front !== front) continue;
-        const [x1, y1] = pt(...edge.a);
-        const [x2, y2] = pt(...edge.b);
+  if (fuse <= 0) {
+    ctx.globalAlpha = 1;
+    return;
+  }
+  ctx.strokeStyle = colors.outline;
+
+  // 2. The fused block silhouette, fading as the smooth outline takes over.
+  const blockAlpha = fuse * (1 - clamp01(smooth * 2.2)) * alpha;
+  if (blockAlpha > 0) {
+    ctx.globalAlpha = blockAlpha;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (const [x1, y1, x2, y2] of p.blockEdges) {
+      ctx.moveTo(ox + x1 * s, oy + y1 * s);
+      ctx.lineTo(ox + x2 * s, oy + y2 * s);
+    }
+    ctx.stroke();
+  }
+
+  // 3. The smooth outline: relaxes out of the blocks, then turns to isometric and gains depth.
+  const lineAlpha = fuse * clamp01(smooth * 2.2) * alpha;
+  if (lineAlpha <= 0) {
+    ctx.globalAlpha = 1;
+    return;
+  }
+  const pt = (x: number, y: number, z: number): [number, number] => {
+    const [px, py] = project(x, y, z, turn);
+    return [ox + px * s, oy + py * s];
+  };
+
+  if (turn > 0) {
+    // Depth lines and the visible part of the back face, lighter than the front.
+    ctx.globalAlpha = lineAlpha * 0.5 * turn;
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    for (const [x, y, from, to] of shape.connectors) {
+      const [x1, y1] = pt(x, y, from);
+      const [x2, y2] = pt(x, y, to);
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+    }
+    for (const c of p.contours) {
+      const n = c.to.length / 2;
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        if (c.back[i] !== "1" || c.back[j] !== "1") continue;
+        const [x1, y1] = pt(c.to[i * 2], c.to[i * 2 + 1], 0);
+        const [x2, y2] = pt(c.to[j * 2], c.to[j * 2 + 1], 0);
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
       }
-      ctx.stroke();
     }
+    ctx.stroke();
   }
+
+  // Front face: the object's outline.
+  ctx.globalAlpha = lineAlpha;
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  for (const c of p.contours) {
+    const n = c.to.length / 2;
+    for (let i = 0; i < n; i++) {
+      const x = c.from[i * 2] + (c.to[i * 2] - c.from[i * 2]) * smooth;
+      const y = c.from[i * 2 + 1] + (c.to[i * 2 + 1] - c.from[i * 2 + 1]) * smooth;
+      const [px, py] = pt(x, y, DEPTH);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+  }
+  ctx.stroke();
   ctx.globalAlpha = 1;
 }
 
